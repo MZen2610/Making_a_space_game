@@ -21,18 +21,36 @@ async def blink(canvas, row, column, symbol='*'):
 def draw(canvas):
     curses.curs_set(False)
     canvas.border()
-    row, column = (5, 20)
 
-    coroutine = blink(canvas, row, column, symbol='*')
+    star_5_5 = blink(canvas, 5, 5, symbol='*')
+    star_5_10 = blink(canvas, 5, 10, symbol='*')
+    star_5_15 = blink(canvas, 5, 15, symbol='*')
+    star_5_20 = blink(canvas, 5, 20, symbol='*')
+    star_5_25 = blink(canvas, 5, 25, symbol='*')
+
+    coroutines = [star_5_5, star_5_10, star_5_15, star_5_20, star_5_25]
+
     while True:
-        try:
-            coroutine.send(None)
-            canvas.refresh()
-            time.sleep(1)
-        except StopIteration:
+        for coroutine in coroutines.copy():
+            try:
+                coroutine.send(None)
+            except StopIteration:
+                coroutines.remove(coroutine)
+        if len(coroutines) == 0:
             break
+        canvas.refresh()
+        time.sleep(1)
 
-
+    # row, column = (5, 20)
+    #
+    # coroutine = blink(canvas, row, column, symbol='*')
+    # while True:
+    #     try:
+    #         coroutine.send(None)
+    #         canvas.refresh()
+    #         time.sleep(1)
+    #     except StopIteration:
+    #         break
 
     # canvas.addstr(row, column, '*', curses.A_DIM)
     # canvas.refresh()
@@ -52,7 +70,5 @@ def draw(canvas):
 
 
 if __name__ == '__main__':
-
     curses.update_lines_cols()
     curses.wrapper(draw)
-
