@@ -1,5 +1,3 @@
-from curses import window
-
 import time
 import curses
 import asyncio
@@ -8,10 +6,15 @@ import random
 
 async def blink(canvas, row, column, symbol='*'):
     while True:
+        sleep = random.randint(0, 1)
         canvas.addstr(row, column, symbol, curses.A_DIM)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
         await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
         await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol, curses.A_BOLD)
@@ -19,6 +22,7 @@ async def blink(canvas, row, column, symbol='*'):
 
         canvas.addstr(row, column, symbol)
         await asyncio.sleep(0)
+
 
 
 def draw(canvas):
@@ -48,7 +52,7 @@ def draw(canvas):
         if len(coroutines) == 0:
             break
         canvas.refresh()
-        time.sleep(1)
+        time.sleep(0.5)
 
     # canvas.addstr(row, column, '*', curses.A_DIM)
     # canvas.refresh()
