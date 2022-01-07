@@ -6,23 +6,24 @@ import random
 
 async def blink(canvas, row, column, symbol='*'):
     while True:
-        sleep = random.randint(0, 1)
+        sequence = random.randint(1, 2)
+
         canvas.addstr(row, column, symbol, curses.A_DIM)
         await asyncio.sleep(0)
         await asyncio.sleep(0)
         await asyncio.sleep(0)
 
-        canvas.addstr(row, column, symbol)
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
-
-        canvas.addstr(row, column, symbol, curses.A_BOLD)
-        await asyncio.sleep(0)
-
-        canvas.addstr(row, column, symbol)
-        await asyncio.sleep(0)
-
+        if sequence == 1:
+            canvas.addstr(row, column, symbol)
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+        elif sequence == 2:
+            canvas.addstr(row, column, symbol, curses.A_BOLD)
+            await asyncio.sleep(0)
+        else:
+            canvas.addstr(row, column, symbol)
+            await asyncio.sleep(0)
 
 
 def draw(canvas):
@@ -35,9 +36,8 @@ def draw(canvas):
     height, width = canvas.getmaxyx()
 
     while count_stars > 0:
-
         row = random.randint(1, height - 2)
-        column = random.randint(1, width-2)
+        column = random.randint(1, width - 2)
         symbol = random.choice(symbols)
         star = blink(canvas, row, column, symbol)
         coroutines.append(star)
@@ -47,28 +47,13 @@ def draw(canvas):
         for coroutine in coroutines.copy():
             try:
                 coroutine.send(None)
+
             except StopIteration:
                 coroutines.remove(coroutine)
         if len(coroutines) == 0:
             break
         canvas.refresh()
-        time.sleep(0.5)
-
-    # canvas.addstr(row, column, '*', curses.A_DIM)
-    # canvas.refresh()
-    # time.sleep(2)
-    #
-    # canvas.addstr(row, column, '*')
-    # canvas.refresh()
-    # time.sleep(0.3)
-    #
-    # canvas.addstr(row, column, '*', curses.A_BOLD)
-    # canvas.refresh()
-    # time.sleep(0.5)
-    #
-    # canvas.addstr(row, column, '*')
-    # canvas.refresh()
-    # time.sleep(0.3)
+        time.sleep(0.3)
 
 
 if __name__ == '__main__':
