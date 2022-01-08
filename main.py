@@ -1,7 +1,28 @@
-import time
-import curses
+from itertools import cycle
+from curses_tools import draw_frame
+
 import asyncio
+import curses
 import random
+import time
+
+
+async def animate_spaceship(canvas, row, column, frame1, frame2):
+    while True:
+        frame = [1, 2]
+        for item in cycle(frame):
+            if item == 1:
+                draw_frame(canvas, row, column, frame2, negative=True)
+                draw_frame(canvas, row, column, frame1)
+                canvas.refresh()
+
+                await asyncio.sleep(0)
+            elif item == 2:
+                draw_frame(canvas, row, column, frame1, negative=True)
+                draw_frame(canvas, row, column, frame2)
+                canvas.refresh()
+
+                await asyncio.sleep(0)
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
@@ -57,14 +78,21 @@ async def blink(canvas, row, column, symbol='*'):
 
 
 def draw(canvas):
-    curses.curs_set(False)
-    canvas.border()
-
     coroutines = []
     coroutines_fire = []
+    coroutines_star_ship = []
     symbols = '+*.:'
     count_stars = random.randint(50, 75)
     height, width = canvas.getmaxyx()
+    with open('animations/rocket_frame_1.txt', 'r') as rocket_frame_1:
+        frame1 = rocket_frame_1.read()
+    with open('animations/rocket_frame_2.txt', 'r') as rocket_frame_2:
+        frame2 = rocket_frame_2.read()
+    half_width = int(width / 2)
+    quarter_height = int(height / 4)
+
+    curses.curs_set(False)
+    canvas.border()
 
     while count_stars > 0:
         row = random.randint(1, height - 2)
@@ -75,7 +103,10 @@ def draw(canvas):
         count_stars -= 1
 
     for step in range(height):
-        coroutines_fire.append(fire(canvas, 1, width / 2, 1))
+        coroutines_fire.append(fire(canvas, 1, half_width, 1))
+
+    for step in range(1, 200):
+        coroutines_star_ship.append(animate_spaceship(canvas, quarter_height, half_width, frame1, frame2))
 
     while True:
         for coroutine in coroutines.copy():
@@ -94,6 +125,14 @@ def draw(canvas):
             except StopIteration:
                 coroutines_fire.remove(coroutine)
         if len(coroutines_fire) == 0:
+            break
+
+        for coroutine in coroutines_star_ship.copy():
+            try:
+                coroutine.send(None)
+            except StopIteration:
+                coroutines_star_ship.remove(coroutine)
+        if len(coroutines_star_ship) == 0:
             break
 
 
