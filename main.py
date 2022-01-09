@@ -1,5 +1,5 @@
 from itertools import cycle
-from curses_tools import draw_frame
+from curses_tools import draw_frame, read_controls
 
 import asyncio
 import curses
@@ -12,13 +12,19 @@ async def animate_spaceship(canvas, row, column, frame1, frame2):
         frame = [1, 2]
         for item in cycle(frame):
             if item == 1:
+                rows_direction, columns_direction, space_pressed = read_controls(canvas)
                 draw_frame(canvas, row, column, frame2, negative=True)
+                row = row + rows_direction
+                column = column + columns_direction
                 draw_frame(canvas, row, column, frame1)
                 canvas.refresh()
 
                 await asyncio.sleep(0)
             elif item == 2:
+                rows_direction, columns_direction, space_pressed = read_controls(canvas)
                 draw_frame(canvas, row, column, frame1, negative=True)
+                row = row + rows_direction
+                column = column + columns_direction
                 draw_frame(canvas, row, column, frame2)
                 canvas.refresh()
 
@@ -105,8 +111,8 @@ def draw(canvas):
     for step in range(height):
         coroutines_fire.append(fire(canvas, 1, half_width, 1))
 
-    for step in range(1, 200):
-        coroutines_star_ship.append(animate_spaceship(canvas, quarter_height, half_width, frame1, frame2))
+    for step in range(1, 2):
+        coroutines_star_ship.append(animate_spaceship(canvas, quarter_height,   half_width, frame1, frame2))
 
     while True:
         for coroutine in coroutines.copy():
@@ -116,16 +122,18 @@ def draw(canvas):
                 coroutines.remove(coroutine)
         if len(coroutines) == 0:
             break
+
+        canvas.nodelay(True)
         canvas.refresh()
         time.sleep(0.3)
 
-        for coroutine in coroutines_fire.copy():
-            try:
-                coroutine.send(None)
-            except StopIteration:
-                coroutines_fire.remove(coroutine)
-        if len(coroutines_fire) == 0:
-            break
+        # for coroutine in coroutines_fire.copy():
+        #     try:
+        #         coroutine.send(None)
+        #     except StopIteration:
+        #         coroutines_fire.remove(coroutine)
+        # if len(coroutines_fire) == 0:
+        #     break
 
         for coroutine in coroutines_star_ship.copy():
             try:
@@ -134,6 +142,9 @@ def draw(canvas):
                 coroutines_star_ship.remove(coroutine)
         if len(coroutines_star_ship) == 0:
             break
+        # canvas.refresh()
+        # time.sleep(0.3)
+        #read_controls(canvas)
 
 
 if __name__ == '__main__':
