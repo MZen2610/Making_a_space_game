@@ -1,5 +1,5 @@
 from itertools import cycle
-from curses_tools import draw_frame, read_controls
+from curses_tools import draw_frame, read_controls, get_frame_size
 
 import asyncio
 import curses
@@ -7,33 +7,41 @@ import random
 import time
 
 
-async def animate_spaceship(canvas, row, column, frame1, frame2):
+def calculate_displacement(canvas, row, column, frame, height, width):
+    row_frame, column_frame = get_frame_size(frame)
+    rows_direction, columns_direction, space_pressed = read_controls(canvas)
+
+    if 0 < row + rows_direction < height - row_frame:
+        row = row + rows_direction
+
+    if 0 < column + columns_direction < width - column_frame:
+        column = column + columns_direction
+
+    return canvas, row, column
+
+
+async def animate_spaceship(canvas, height, width, frame1, frame2):
+    column = int(width / 2)
+    row = int(height / 4)
+
     while True:
-        frame = [1, 2]
-        for item in cycle(frame):
+        step = [1, 2]
+        for item in cycle(step):
+            frame = frame2
+            negative_frame = frame1
             if item == 1:
-                rows_direction, columns_direction, space_pressed = read_controls(canvas)
-                draw_frame(canvas, row, column, frame2, negative=True)
-                row = row + rows_direction
-                column = column + columns_direction
-                draw_frame(canvas, row, column, frame1)
-                canvas.refresh()
+                frame = frame1
+                negative_frame = frame2
 
-                await asyncio.sleep(0)
-            elif item == 2:
-                rows_direction, columns_direction, space_pressed = read_controls(canvas)
-                draw_frame(canvas, row, column, frame1, negative=True)
-                row = row + rows_direction
-                column = column + columns_direction
-                draw_frame(canvas, row, column, frame2)
-                canvas.refresh()
+            draw_frame(canvas, row, column, negative_frame, negative=True)
+            canvas, row, column = calculate_displacement(canvas, row, column, frame, height, width)
+            draw_frame(canvas, row, column, frame)
+            canvas.refresh()
 
-                await asyncio.sleep(0)
+            await asyncio.sleep(0)
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
-    """Display animation of gun shot, direction and speed can be specified."""
-
     row, column = start_row, start_column
 
     canvas.addstr(round(row), round(column), '*')
@@ -84,21 +92,22 @@ async def blink(canvas, row, column, symbol='*'):
 
 
 def draw(canvas):
+    curses.curs_set(False)
+    canvas.border()
+
     coroutines = []
     coroutines_fire = []
     coroutines_star_ship = []
+
     symbols = '+*.:'
     count_stars = random.randint(50, 75)
     height, width = canvas.getmaxyx()
+    half_width = int(width / 2)
+
     with open('animations/rocket_frame_1.txt', 'r') as rocket_frame_1:
         frame1 = rocket_frame_1.read()
     with open('animations/rocket_frame_2.txt', 'r') as rocket_frame_2:
         frame2 = rocket_frame_2.read()
-    half_width = int(width / 2)
-    quarter_height = int(height / 4)
-
-    curses.curs_set(False)
-    canvas.border()
 
     while count_stars > 0:
         row = random.randint(1, height - 2)
@@ -108,11 +117,8 @@ def draw(canvas):
         coroutines.append(star)
         count_stars -= 1
 
-    for step in range(height):
-        coroutines_fire.append(fire(canvas, 1, half_width, 1))
-
-    for step in range(1, 2):
-        coroutines_star_ship.append(animate_spaceship(canvas, quarter_height,   half_width, frame1, frame2))
+    coroutines_fire.append(fire(canvas, 1, half_width, 1))
+    coroutines_star_ship.append(animate_spaceship(canvas, height, width, frame1, frame2))
 
     while True:
         for coroutine in coroutines.copy():
@@ -127,13 +133,13 @@ def draw(canvas):
         canvas.refresh()
         time.sleep(0.3)
 
-        # for coroutine in coroutines_fire.copy():
-        #     try:
-        #         coroutine.send(None)
-        #     except StopIteration:
-        #         coroutines_fire.remove(coroutine)
-        # if len(coroutines_fire) == 0:
-        #     break
+        for coroutine in coroutines_fire.copy():
+            try:
+                coroutine.send(None)
+            except StopIteration:
+                coroutines_fire.remove(coroutine)
+        if len(coroutines_fire) == 0:
+            break
 
         for coroutine in coroutines_star_ship.copy():
             try:
@@ -142,9 +148,6 @@ def draw(canvas):
                 coroutines_star_ship.remove(coroutine)
         if len(coroutines_star_ship) == 0:
             break
-        # canvas.refresh()
-        # time.sleep(0.3)
-        #read_controls(canvas)
 
 
 if __name__ == '__main__':
