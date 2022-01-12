@@ -67,15 +67,13 @@ async def blink(canvas, row, column, symbol='*'):
         sequence = random.randint(1, 2)
 
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
+        for step in range(2):
+            await asyncio.sleep(0)
 
         if sequence == 1:
             canvas.addstr(row, column, symbol)
-            await asyncio.sleep(0)
-            await asyncio.sleep(0)
-            await asyncio.sleep(0)
+            for step in range(2):
+                await asyncio.sleep(0)
         elif sequence == 2:
             canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
@@ -102,13 +100,12 @@ def draw(canvas):
     with open('animations/rocket_frame_2.txt', 'r') as rocket_frame_2:
         frame2 = rocket_frame_2.read()
 
-    while count_stars > 0:
+    for star in range(count_stars):
         row = random.randint(1, height - 2)
         column = random.randint(1, width - 2)
         symbol = random.choice(symbols)
-        star = blink(canvas, row, column, symbol)
-        coroutines.append(star)
-        count_stars -= 1
+        flashing_star = blink(canvas, row, column, symbol)
+        coroutines.append(flashing_star)
 
     coroutines_fire.append(fire(canvas, 1, half_width, 1))
     coroutines_star_ship.append(animate_spaceship(canvas, height, width, frame1, frame2))
