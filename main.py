@@ -31,7 +31,6 @@ async def animate_spaceship(canvas, height, width, frame1, frame2):
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
         canvas, row, column = calculate_displacement(canvas, row, column, frame, height, width)
-        canvas.refresh()
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
