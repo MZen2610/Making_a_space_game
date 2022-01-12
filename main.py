@@ -24,21 +24,14 @@ async def animate_spaceship(canvas, height, width, frame1, frame2):
     column = int(width / 2)
     row = int(height / 4)
 
-    while True:
-        step = [1, 2]
-        for item in cycle(step):
-            frame = frame2
-            negative_frame = frame1
-            if item == 1:
-                frame = frame1
-                negative_frame = frame2
-
-            draw_frame(canvas, row, column, negative_frame, negative=True)
-            canvas, row, column = calculate_displacement(canvas, row, column, frame, height, width)
-            draw_frame(canvas, row, column, frame)
-            canvas.refresh()
-
-            await asyncio.sleep(0)
+    step = [1, 2]
+    for item in cycle(step):
+        frame = frame1 if item == 1 else frame2
+        draw_frame(canvas, row, column, frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, frame, negative=True)
+        canvas, row, column = calculate_displacement(canvas, row, column, frame, height, width)
+        canvas.refresh()
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
