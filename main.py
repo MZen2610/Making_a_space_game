@@ -93,6 +93,7 @@ def draw(canvas):
     count_stars = random.randint(50, 75)
     height, width = canvas.getmaxyx()
     half_width = int(width / 2)
+    retreat = 2
 
     with open('animations/rocket_frame_1.txt', 'r') as rocket_frame_1:
         frame1 = rocket_frame_1.read()
@@ -100,8 +101,8 @@ def draw(canvas):
         frame2 = rocket_frame_2.read()
 
     for star in range(count_stars):
-        row = random.randint(1, height - 2)
-        column = random.randint(1, width - 2)
+        row = random.randint(1, height - retreat)
+        column = random.randint(1, width - retreat)
         symbol = random.choice(symbols)
         flashing_star = blink(canvas, row, column, symbol)
         coroutines.append(flashing_star)
