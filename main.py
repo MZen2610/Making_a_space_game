@@ -85,7 +85,7 @@ def draw(canvas):
     curses.curs_set(False)
     canvas.border()
 
-    coroutines = []
+    coroutines_stars = []
     coroutines_fire = []
     coroutines_star_ship = []
 
@@ -105,10 +105,12 @@ def draw(canvas):
         column = random.randint(1, width - retreat)
         symbol = random.choice(symbols)
         flashing_star = blink(canvas, row, column, symbol)
-        coroutines.append(flashing_star)
+        coroutines_stars.append(flashing_star)
 
     coroutines_fire.append(fire(canvas, 1, half_width, 1))
     coroutines_star_ship.append(animate_spaceship(canvas, height, width, frame1, frame2))
+
+    coroutines = coroutines_stars + coroutines_fire + coroutines_star_ship
 
     while True:
         for coroutine in coroutines.copy():
@@ -122,22 +124,6 @@ def draw(canvas):
         canvas.nodelay(True)
         canvas.refresh()
         time.sleep(0.3)
-
-        for coroutine in coroutines_fire.copy():
-            try:
-                coroutine.send(None)
-            except StopIteration:
-                coroutines_fire.remove(coroutine)
-        if len(coroutines_fire) == 0:
-            break
-
-        for coroutine in coroutines_star_ship.copy():
-            try:
-                coroutine.send(None)
-            except StopIteration:
-                coroutines_star_ship.remove(coroutine)
-        if len(coroutines_star_ship) == 0:
-            break
 
 
 if __name__ == '__main__':
