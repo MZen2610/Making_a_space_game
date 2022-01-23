@@ -24,9 +24,8 @@ async def animate_spaceship(canvas, height, width, frame1, frame2):
     column = int(width / 2)
     row = int(height / 4)
 
-    step = [1, 2]
-    for item in cycle(step):
-        frame = frame1 if item == 1 else frame2
+    for item in cycle([frame1, frame2]):
+        frame = frame1 if item == frame1 else frame2
         draw_frame(canvas, row, column, frame)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
@@ -63,22 +62,19 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
 async def blink(canvas, row, column, symbol='*'):
     while True:
-        sequence = random.randint(1, 2)
-
         canvas.addstr(row, column, symbol, curses.A_DIM)
         for step in range(2):
             await asyncio.sleep(0)
 
-        if sequence == 1:
-            canvas.addstr(row, column, symbol)
-            for step in range(2):
-                await asyncio.sleep(0)
-        elif sequence == 2:
-            canvas.addstr(row, column, symbol, curses.A_BOLD)
+        canvas.addstr(row, column, symbol)
+        for step in range(2):
             await asyncio.sleep(0)
-        else:
-            canvas.addstr(row, column, symbol)
-            await asyncio.sleep(0)
+
+        canvas.addstr(row, column, symbol, curses.A_BOLD)
+        await asyncio.sleep(0)
+
+        canvas.addstr(row, column, symbol)
+        await asyncio.sleep(0)
 
 
 def draw(canvas):
